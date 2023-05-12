@@ -1,0 +1,20 @@
+{% extends "layout_main.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block body %}
+
+        <h1>Register a new user</h1>
+        
+        <form action="{% url 'users:register' %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="Username"><br><br>
+            <input type="email" name="email" placeholder="Email address"><br><br>
+            <input type="password" name="password" placeholder="Password"><br><br>
+            <input type="password" name="repeat" placeholder="Repeat password"><br><br>
+            <input type="submit">
+        </form>
+
+        <br><a href="{% url 'users:index' %}">Cancel</a>
+
+{% endblock %}

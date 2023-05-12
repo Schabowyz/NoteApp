@@ -1,0 +1,19 @@
+{% extends "layout_main.html" %}
+
+{% block title %}Your notes{% endblock %}
+
+{% block body %}
+    <h1>Your notes</h1>
+    <a href="{% url 'notes:add' %}">Create new note</a>
+    <ul>
+        {% for note in notes %}
+            <li><b>{{ note.title }}</b>
+                | <a href="{% url 'notes:edit' note.id %}">Edit</a>
+                | <a href="{% url 'notes:delete' note.id %}">Delete</a>
+            </li>
+            <p>{{ note.text }}</p>
+        {% empty %}
+            <h3>You have no notes</h3>
+        {% endfor %}
+    </ul>
+{% endblock %}

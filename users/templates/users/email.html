@@ -1,0 +1,17 @@
+{% extends "layout_main.html" %}
+
+{% block title %}Change email{% endblock %}
+
+{% block body %}
+
+        <h1>Change email address</h1>
+
+        <form action="{% url 'users:email' %}" method="post">
+            {% csrf_token %}
+            <input type="email" name="email" placeholder="New email address">
+            <input type="submit">
+        </form>
+
+        <br><a href="{% url 'users:index' %}">Cancel</a>
+
+{% endblock %}
