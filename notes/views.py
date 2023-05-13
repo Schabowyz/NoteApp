@@ -18,24 +18,20 @@ def index(request):
 # Add page for new notes
 def add(request):
     # Gets info from form and submits it to database
-    if request.method == "POST":
-        note = Note(title = request.POST["title"], text = request.POST["text"], user_id = User.objects.get(id = request.user.id))
-        note.save()
-        return HttpResponseRedirect(reverse("notes:index"))
-    return render(request, "notes/add.html")
+    note = Note(title = request.POST["title"], text = request.POST["text"], user_id = User.objects.get(id = request.user.id))
+    note.save()
+    return HttpResponseRedirect(reverse("notes:index"))
+
 
 # Edit page for existing notes
 def edit(request, note_id):
     # Gets info from form and updates db entry
-    if request.method == "POST":
-        note = Note.objects.get(id = note_id)
-        note.title = request.POST["title"]
-        note.text = request.POST["text"]
-        note.save()
-        return HttpResponseRedirect(reverse("notes:index"))
-    return render(request, "notes/edit.html", {
-        "note": Note.objects.get(id = note_id)
-    })
+    note = Note.objects.get(id = note_id)
+    note.title = request.POST["title"]
+    note.text = request.POST["text"]
+    note.save()
+    return HttpResponseRedirect(reverse("notes:index"))
+
 
 # Delete page for existing notes
 def delete(request, note_id):

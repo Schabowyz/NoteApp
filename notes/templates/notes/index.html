@@ -1,19 +1,88 @@
 {% extends "layout_main.html" %}
 
+{% load static %}
+
 {% block title %}Your notes{% endblock %}
 
 {% block body %}
-    <h1>Your notes</h1>
-    <a href="{% url 'notes:add' %}">Create new note</a>
-    <ul>
-        {% for note in notes %}
-            <li><b>{{ note.title }}</b>
-                | <a href="{% url 'notes:edit' note.id %}">Edit</a>
-                | <a href="{% url 'notes:delete' note.id %}">Delete</a>
-            </li>
-            <p>{{ note.text }}</p>
-        {% empty %}
-            <h3>You have no notes</h3>
-        {% endfor %}
-    </ul>
+    <link href="{% static 'notes/styles.css' %}" rel="stylesheet">
+    
+    <div class="row">
+
+        <div class="col">
+            <h3 >Your notes:</h3>
+        </div>
+        <div class="col">
+            <h3>
+                <a id="new" class="d-flex justify-content-end" data-bs-toggle="collapse" href="#collapse" aria-expanded="false" aria-controls="collapse">
+                    <button class="btn btn-warning btn-custom">New note</button>
+                </a>
+            </h3>
+        </div>
+
+        <div class="collapse" id="collapse">
+            <div class="card card-body">
+                <form action="{% url 'notes:add' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input type="text" name="title" class="form-control" placeholder="Note title" required="required">
+                    </div>
+                    <div class="mb-3">
+                        <textarea class="form-control" name="text" rows="3" placeholder="Note text" required="required"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-custom">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div><br>
+
+    {% if notes %}
+        <div class="row row-cols-1 row-cols-md-1 row-cols-lg-2 row-cols-xxl-3 g-4">
+            {% for note in notes %}
+            <div class="col">
+                <div class="card h-100 shadow">
+                    <div class="card-body">
+
+                        <form action="{% url 'notes:edit' note.id %}" method="post" id="editForm-{{ note.id }}">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col col-10">
+                                    <h8 class="card-title">
+                                        <input type="text" name="title" class="form-control form-control-lg paper" value="{{ note.title }}" required="required">
+                                    </h8>
+                                </div>
+                                <div class="col col-2 d-flex justify-content-end align-items-center">
+                                    <a href="javascript:{}" onclick="document.getElementById('editForm-{{ note.id }}').submit();" class="card-link">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-save icon-black" viewBox="0 0 16 16">
+                                            <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/>
+                                          </svg>
+                                    </a>
+                                    <a href="{% url 'notes:delete' note.id %}" class="card-link">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-trash icon-black" viewBox="0 0 16 16">
+                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
+                                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"/>
+                                        </svg>
+                                    </a>                                   
+                                </div>
+                            </div>
+                            <hr class="mt-1 mb-1">
+                            <p class="card-text">
+                                <textarea class="form-control paper NoteTextarea" class="form-control" name="text" required="required">{{ note.text }}</textarea>
+                            </p>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <h3>You have no notes</h3>
+    {% endif %}
+
+    <script src="{% static 'notes/script.js' %}"></script>
+
 {% endblock %}
+
+
+  
