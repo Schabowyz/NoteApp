@@ -6,8 +6,12 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-
 from .models import Note
+
+
+##################################################     ROUTES     ##################################################
+
+###############     STATIC PAGES     ###############
 
 # Index page for notes
 def index(request):
@@ -19,7 +23,14 @@ def index(request):
         "notes": Note.objects.filter(user_id=request.user.id)
     })
 
-# Add page for new notes
+# Information page about the project
+def about(request):
+    return render(request, "notes/about.html")
+
+
+###############     FUNCTIONS     ###############
+
+# Add new note in notes page
 @login_required
 def add(request):
     # Gets info from form and submits it to database
@@ -28,37 +39,40 @@ def add(request):
     messages.success(request, "Your note was successfully added")
     return HttpResponseRedirect(reverse("notes:index"))
 
-# Edit page for existing notes
+# Edit existing note in notes page
 @login_required
 def edit(request, note_id):
     # Gets info from form and updates db entry
     try:
         note = Note.objects.get(id = note_id)
-        if request.user.id != note.user_id:
+        # Checks if user is note's owner
+        if request.user.username != str(note.user_id):
             messages.success(request, "It's not your note you hacker!")
             return HttpResponseRedirect(reverse("notes:index"))
         note.title = request.POST["title"]
         note.text = request.POST["text"]
         note.save()
         messages.success(request, "Your note was successfully updated")
+    # If note doesn't exist
     except ObjectDoesNotExist:
         messages.success(request, "404: That note doesn't exist")
+    # Redirects back to notes page
     return HttpResponseRedirect(reverse("notes:index"))
 
-# Delete page for existing notes
+# Delete existing note in notes page
 @login_required
 def delete(request, note_id):
     # Gets note id and removes it from db
     try:
         note = Note.objects.get(id=note_id)
-        if request.user.id != note.user_id:
+        # Checks if user is note's owner
+        if request.user.username != str(note.user_id):
             messages.success(request, "It's not your note you hacker!")
             return HttpResponseRedirect(reverse("notes:index"))
         note.delete()
         messages.success(request, "Your note was successfully removed")
+    # If note doesn't exist
     except ObjectDoesNotExist:
         messages.success(request, "404: That note doesn't exist")
+    # Redirects back to notes page
     return HttpResponseRedirect(reverse("notes:index"))
-
-def about(request):
-    return render(request, "notes/about.html")

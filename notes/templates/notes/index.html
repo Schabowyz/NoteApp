@@ -75,6 +75,7 @@
                             </p>
                         </form>
                         {{ note.id }}
+                        {% url 'notes:delete' note.id %}
                         
                     </div>
                 </div>

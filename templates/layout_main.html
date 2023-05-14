@@ -80,7 +80,7 @@
         {% if messages %}
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
                 {% for message in messages %}
-                    {{ message }}
+                    {{ message }}<br>
                 {% endfor %}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -93,6 +93,7 @@
             {% endblock %}
         </div>
         
-
+        <br><br>
+    
     </body>
 </html>

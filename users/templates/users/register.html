@@ -14,16 +14,16 @@
             <h6 class="card-title">
                 Please enter your information below:
             </h6>
-            <p>Please remember that you can login as demo user, you can find credentials in login page.</p>
+            <p>Please note that you can login as demo user. Login credentials can be foound in the login page.</p>
             <hr class="mt-1 mb-1">
             <p class="card-text">
                 <form action="{% url 'users:register' %}" method="post">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <input class="form-control" type="text" name="username" placeholder="Username" autofocus required="required">
+                        <input class="form-control" type="email" name="email" placeholder="Email address" required="required">
                     </div>
                     <div class="mb-3">
-                        <input class="form-control" type="email" name="email" placeholder="Email address" required="required">
+                        <input class="form-control" type="text" name="username" placeholder="Username" autofocus required="required">
                     </div>
                     <div class="mb-3">
                         <input class="form-control" type="password" name="password" placeholder="Password" required="required">
