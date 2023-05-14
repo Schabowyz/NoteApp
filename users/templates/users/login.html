@@ -1,13 +1,48 @@
 {% extends "layout_main.html" %}
+{% load static %}
 
 {% block title %}Login{% endblock %}
 
 {% block body %}
-    <h1>Login</h1>
-    <form action="{% url 'users:login' %}" method="post">
-        {% csrf_token %}
-        <input type="text" name="username" placeholder="Username">
-        <input type="password" name="password" placeholder="Password">
-        <input type="submit" value="Login">
-    </form>
+<link href="{% static 'users/styles.css' %}" rel="stylesheet">
+
+    <h3 >Log in</h3><br>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <h6 class="card-title">
+                Please enter your credentials below:
+            </h6>
+            <p>Demo user credentials:<br>
+            Login: demo_user<br>
+            Password: NoteApp</p>
+            <hr class="mt-1 mb-1">
+            <p class="card-text">
+                <form action="{% url 'users:login' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input class="form-control" type="text" name="username" placeholder="Username" autofocus required="required">
+                    </div>
+                    <div class="mb-3">
+                        <input class="form-control" type="password" name="password" placeholder="Password" required="required">
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-warning">Log in</button>
+                    </div>
+                </form>
+            </p>
+        </div>
+    </div>
+    
 {% endblock %}
+
+
+
+
+    
+    
+
+
+
+
+  

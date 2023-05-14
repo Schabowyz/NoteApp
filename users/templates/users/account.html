@@ -1,0 +1,120 @@
+{% extends "layout_main.html" %}
+
+{% load static %}
+
+{% block title %}Your notes{% endblock %}
+
+{% block body %}
+    <link href="{% static 'users/styles.css' %}" rel="stylesheet">
+
+    <h3 >Your account:</h3><br>
+        
+    <div class="row row-cols-1 row-cols-md-1 row-cols-lg-2 row-cols-xxl-3 g-4">
+
+        <div class="col col-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        Welcome, {{ request.user.username }}!
+                    </h6>
+                    <hr class="mt-1 mb-1">
+                    <p class="card-text">
+                        <div class="row">
+                            <div class="col">
+                                Login:
+                             </div>
+                             <div class="col d-flex justify-content-end">
+                                {{ request.user.username }}
+                             </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                Email
+                             </div>
+                             <div class="col d-flex justify-content-end">
+                                {{ request.user.email }}
+                             </div>
+                        </div>
+                        <hr class="mt-1 mb-1"><br>
+                        <div class="d-grid gap-2">
+                            <!-- Collabpse button 1 -->
+                            <a type="button" class="btn btn-warning" data-bs-toggle="collapse" href="#collapse1" aria-expanded="false" aria-controls="collapse1">Change mail address</a>
+                            <!-- Collapse button 2 -->
+                            <a type="button" class="btn btn-warning" data-bs-toggle="collapse" href="#collapse2" aria-expanded="false" aria-controls="collapse2">Change password</a>
+                            <!-- Collapse button 2 -->
+                            <a type="button" class="btn btn-warning" data-bs-toggle="collapse" href="#collapse3" aria-expanded="false" aria-controls="collapse3">Delete account</a>
+                        </div>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col col-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        Changes manager:
+                    </h6>
+                    <hr class="mt-1 mb-1">
+                    <p class="card-text">
+
+                        <!-- Collapse 1 -->
+                        <div class="collapse" id="collapse1">
+                            <h5>Email change:</h5>
+                            <form action="{% url 'users:email' %}" method="post">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <input type="text" name="email" class="form-control" value="{{ request.user.email }}" required="required">
+                                </div>
+                                <button type="submit" class="btn btn-warning">Submit email</button>
+                            </form>
+                            <br><hr class="mt-1 mb-1">
+                        </div>
+
+                        <!-- Collapse 2 -->
+                        <div class="collapse" id="collapse2">
+                            <br>
+                            <form action="{% url 'users:password' %}" method="post">
+                                <h5>Password change:</h5>
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <input type="password" name="old_password" class="form-control" placeholder="Old password" required="required">
+                                </div>
+                                <div class="mb-3">
+                                    <input type="password" name="password" class="form-control" placeholder="New password" required="required">
+                                </div>
+                                <div class="mb-3">
+                                    <input type="password" name="repeat" class="form-control" placeholder="Repeat password" required="required">
+                                </div>
+                                <button type="submit" class="btn btn-warning">Submit password</button>
+                            </form>
+                            <br><hr class="mt-1 mb-1">
+                        </div>
+
+                        <!-- Collapse 3 -->
+                        <div class="collapse" id="collapse3">
+                            <br>
+                            <h5>Account removal:</h5>
+                            <p>Please take a note that after upon removing your accout all the notes get deleted too and it's impossible to retrive them.</p>
+                            <form action="{% url 'users:delete' %}" method="post">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <input type="password" name="password" class="form-control" placeholder="Password" required="required">
+                                </div>
+                                <button type="submit" class="btn btn-danger">Delete account</button>
+                            </form>
+                        </div>
+
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    
+
+{% endblock %}
+
+
+  

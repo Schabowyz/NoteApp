@@ -10,12 +10,16 @@
     <div class="row">
 
         <div class="col">
-            <h3 >Your notes:</h3>
+            {% if notes %}
+                <h3 >Your notes:</h3>
+            {% else %}
+                <h3>You don't have any notes yet</h3>
+            {% endif %}
         </div>
         <div class="col">
             <h3>
                 <a id="new" class="d-flex justify-content-end" data-bs-toggle="collapse" href="#collapse" aria-expanded="false" aria-controls="collapse">
-                    <button class="btn btn-warning btn-custom">New note</button>
+                    <button class="btn btn-warning btn-custom shadow">New note</button>
                 </a>
             </h3>
         </div>
@@ -30,7 +34,7 @@
                     <div class="mb-3">
                         <textarea class="form-control" name="text" rows="3" placeholder="Note text" required="required"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-warning btn-custom">Submit</button>
+                    <button type="submit" class="btn btn-warning">Submit</button>
                 </form>
             </div>
         </div>
@@ -70,14 +74,13 @@
                                 <textarea class="form-control paper NoteTextarea" class="form-control" name="text" required="required">{{ note.text }}</textarea>
                             </p>
                         </form>
+                        {{ note.id }}
                         
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-    {% else %}
-        <h3>You have no notes</h3>
     {% endif %}
 
     <script src="{% static 'notes/script.js' %}"></script>

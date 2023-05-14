@@ -1,20 +1,42 @@
 {% extends "layout_main.html" %}
 
+{% load static %}
+
 {% block title %}Register{% endblock %}
 
 {% block body %}
+    <link href="{% static 'users/styles.css' %}" rel="stylesheet">
 
-        <h1>Register a new user</h1>
-        
-        <form action="{% url 'users:register' %}" method="post">
-            {% csrf_token %}
-            <input type="text" name="username" placeholder="Username"><br><br>
-            <input type="email" name="email" placeholder="Email address"><br><br>
-            <input type="password" name="password" placeholder="Password"><br><br>
-            <input type="password" name="repeat" placeholder="Repeat password"><br><br>
-            <input type="submit">
-        </form>
+    <h3 >Register</h3><br>
 
-        <br><a href="{% url 'users:index' %}">Cancel</a>
+    <div class="card shadow">
+        <div class="card-body">
+            <h6 class="card-title">
+                Please enter your information below:
+            </h6>
+            <p>Please remember that you can login as demo user, you can find credentials in login page.</p>
+            <hr class="mt-1 mb-1">
+            <p class="card-text">
+                <form action="{% url 'users:register' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input class="form-control" type="text" name="username" placeholder="Username" autofocus required="required">
+                    </div>
+                    <div class="mb-3">
+                        <input class="form-control" type="email" name="email" placeholder="Email address" required="required">
+                    </div>
+                    <div class="mb-3">
+                        <input class="form-control" type="password" name="password" placeholder="Password" required="required">
+                    </div>
+                    <div class="mb-3">
+                        <input class="form-control" type="password" name="repeat" placeholder="Repeat password" required="required">
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-warning">Register</button>
+                    </div>
+                </form>
+            </p>
+        </div>
+    </div>
 
 {% endblock %}
