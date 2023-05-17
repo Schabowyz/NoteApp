@@ -1,14 +1,21 @@
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User
-from django.contrib import messages
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.mail import EmailMessage
 from django.core.validators import validate_email
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
+from .tokens import account_activation_token
 
 
 ##################################################     ROUTES     ##################################################
@@ -56,12 +63,12 @@ def register(request):
         except ValidationError:
             messages.error(request, "Ivalid email address")
             error = True
-        try:
-            User.objects.get(email=request.POST["email"])
-            messages.error(request, "Email address already taken")
-            error = True
-        except ObjectDoesNotExist:
-            pass
+        # try:
+        #     User.objects.get(email=request.POST["email"])
+        #     messages.error(request, "Email address already taken")
+        #     error = True
+        # except ObjectDoesNotExist:
+        #     pass
         # Username validation check for availability                                        DODAĆ WALIDACJĘ USERNAME I PASSWORD
         try:
             user = User.objects.create_user(request.POST["username"], request.POST["email"], request.POST["password"])
@@ -70,12 +77,45 @@ def register(request):
             error = True
         # If there was no error raiserd, saves a new user, logs user in and redirects to notes page
         if not error:
-            user.save()
-            login(request, user)
-            messages.success(request, "You were successfully registered")
-            return HttpResponseRedirect(reverse("notes:index"))
+            user.is_active = False
+            if activate_email(request, user):
+                user.save()
+                return HttpResponseRedirect(reverse("notes:index"))
+            user.delete()
     # Render register page
     return render(request, "users/register.html")
+
+def activate_email(request, user):
+    mail_subject = "NoteApp account activation"
+    message = render_to_string("users/activate_account.html", {
+        "user": user.username,
+        "domain": get_current_site(request).domain,
+        "uid": urlsafe_base64_encode(force_bytes(user.username)),
+        "token": account_activation_token.make_token(user),
+        "protocol": "https" if request.is_secure() else "http"
+    })
+    email = EmailMessage(mail_subject, message, to=(user.email,))
+    if email.send():
+        messages.success(request, "Activation email was sent to you. You have to go to your email and confirm the activation")
+        return True
+    else:
+        messages.error(request, "Problem sending message, please check your email")
+        return False
+    
+def activate(request, uidb64, token):
+    user = get_user_model()
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(username = uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Your account was succesfully activated, you can log in now")
+    else:
+        messages.error(request, "Activation link is invalid")
+    return HttpResponseRedirect(reverse("users:index"))
 
 
 ###############     FUNCTIONS     ###############

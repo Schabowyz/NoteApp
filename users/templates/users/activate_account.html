@@ -1,0 +1,10 @@
+{% autoescape off %}
+Hello {{ user.username }},
+
+This is NoteApp account activation email. You can activate your account by clicking a link below:
+http://{{ domain }}{% url 'users:activate' uidb64=uid token=token %}
+
+If you didn't register for the NoteApp, please ignore this message.
+
+Cheers, NoteApp dev
+{% endautoescape %}
