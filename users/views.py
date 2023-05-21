@@ -8,7 +8,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.mail import EmailMessage
 from django.core.validators import validate_email
-from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -17,6 +16,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 from .tokens import account_activation_token
+from .helpers import register_validate, password_check
 
 
 ##################################################     ROUTES     ##################################################
@@ -41,9 +41,7 @@ def account(request):
 def login_view(request):
     # If form is submitted gets form data and checks it
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=request.POST["username"], password=request.POST["password"])
         # If user was autenthicated correctly, logs user in and redirects to notes page, otherwise rerenders login page with error message
         if user:
             login(request, user)
@@ -53,6 +51,22 @@ def login_view(request):
     # Renders login page
     return render(request, "users/login.html")
 
+# Register page
+def register(request):
+    # If form is submitted checks forms information
+    if request.method == "POST":
+        # If there was no error raiserd, saves a new user, logs user in and redirects to notes page
+        user = register_validate(request)
+        if user:
+            user.is_active = False
+            if activate_email(request, user):
+                user.save()
+                return HttpResponseRedirect(reverse("notes:index"))
+            user.delete()
+    # Render register page
+    return render(request, "users/register.html")
+
+# Request for password renewal page
 def renew_password(request):
     if request.method == "POST":
         try:
@@ -63,101 +77,20 @@ def renew_password(request):
             messages.error(request, "User doesn't exist")
     return render(request, "users/renew_password.html")
 
-def renew_password_mail(request, user):
-    mail_subject = "NoteApp - renew password"
-    message = render_to_string("users/renew_password_mail.html", {
-        "user": user.username,
-        "domain": get_current_site(request).domain,
-        "uid": urlsafe_base64_encode(force_bytes(user.username)),
-        "token": PasswordResetTokenGenerator().make_token(user),
-        "protocol": "https" if request.is_secure() else "http"
-    })
-    email = EmailMessage(mail_subject, message, to=(user.email,))
-    if email.send():
-        messages.success(request, "Password renewal email was sent to you, please check your email")
-        return True
-    else:
-        messages.error(request, "Something went wrong")
-        return False
-    
+# Password renewal page    
 def newpassword(request, uidb64, token):
     if request.method == "POST":
-        username = urlsafe_base64_decode(uidb64).decode()
-        print(username)
-        user = User.objects.get(username = username)
-        user.set_password(request.POST["password1"])
-        user.save()
-        messages.success(request, "Your password was successfully changed")
-        return HttpResponseRedirect(reverse("users:index"))
+        if not password_check(request):
+            username = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(username = username)
+            user.set_password(request.POST["password"])
+            user.save()
+            messages.success(request, "Your password was successfully changed, you can log in now")
+            return HttpResponseRedirect(reverse("users:index"))
     return render(request, "users/newpassword.html", {
         "uidb64": uidb64,
         "token": token
     })
-
-# Register page
-def register(request):
-    # If form is submitted checks forms information
-    if request.method == "POST":
-        error = False
-        # Email validation and check for availability
-        try:
-            validate_email(request.POST["email"])
-        except ValidationError:
-            messages.error(request, "Ivalid email address")
-            error = True
-        # try:
-        #     User.objects.get(email=request.POST["email"])
-        #     messages.error(request, "Email address already taken")
-        #     error = True
-        # except ObjectDoesNotExist:
-        #     pass
-        # Username validation check for availability                                        DODAĆ WALIDACJĘ USERNAME I PASSWORD
-        try:
-            user = User.objects.create_user(request.POST["username"], request.POST["email"], request.POST["password"])
-        except IntegrityError:
-            messages.error(request, "Login already taken")
-            error = True
-        # If there was no error raiserd, saves a new user, logs user in and redirects to notes page
-        if not error:
-            user.is_active = False
-            if activate_email(request, user):
-                user.save()
-                return HttpResponseRedirect(reverse("notes:index"))
-            user.delete()
-    # Render register page
-    return render(request, "users/register.html")
-
-def activate_email(request, user):
-    mail_subject = "NoteApp - account activation"
-    message = render_to_string("users/activate_account.html", {
-        "user": user.username,
-        "domain": get_current_site(request).domain,
-        "uid": urlsafe_base64_encode(force_bytes(user.username)),
-        "token": account_activation_token.make_token(user),
-        "protocol": "https" if request.is_secure() else "http"
-    })
-    email = EmailMessage(mail_subject, message, to=(user.email,))
-    if email.send():
-        messages.success(request, "Activation email was sent to you. You have to go to your email and confirm the activation")
-        return True
-    else:
-        messages.error(request, "Problem sending message, please check your email")
-        return False
-        
-def activate(request, uidb64, token):
-    user = get_user_model()
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(username = uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-    if user and account_activation_token.check_token(user, token):
-        user.is_active = True
-        user.save()
-        messages.success(request, "Your account was succesfully activated, you can log in now")
-    else:
-        messages.error(request, "Activation link is invalid")
-    return HttpResponseRedirect(reverse("users:index"))
 
 
 ###############     FUNCTIONS     ###############
@@ -208,7 +141,7 @@ def password(request):
         return HttpResponseRedirect(reverse("users:account"))
     # Checks if old password is correct, then checks if new passwords match, if it's ok saves new pw and returns to account page                        DODAĆ WALIDACJĘ PASSWORD
     if authenticate(request, username=request.user.username, password=request.POST["old_password"]):
-        if request.POST["password"] == request.POST["repeat"]:
+        if not password_check(request):
             user = User.objects.get(id = request.user.id)
             user.set_password(request.POST["password"])
             user.save()
@@ -216,7 +149,8 @@ def password(request):
             messages.success(request, "Your password was successfully updated")
             return HttpResponseRedirect(reverse("users:account"))
     # If something is wrong returns to account page
-    messages.error(request, "Invalid password")
+    else:
+        messages.error(request, "Invalid current password")
     return HttpResponseRedirect(reverse("users:account"))
 
 # Account delete in account page
@@ -232,3 +166,59 @@ def delete(request):
         logout(request)
         messages.success(request, "Your account was successfully deleted")
         return HttpResponseRedirect(reverse("users:index"))
+
+# Account activation email creation and sending    
+def activate_email(request, user):
+    # Creates email message
+    mail_subject = "NoteApp - account activation"
+    message = render_to_string("users/activate_account.html", {
+        "user": user.username,
+        "domain": get_current_site(request).domain,
+        "uid": urlsafe_base64_encode(force_bytes(user.username)),
+        "token": account_activation_token.make_token(user),
+        "protocol": "https" if request.is_secure() else "http"
+    })
+    # Sends message
+    email = EmailMessage(mail_subject, message, to=(user.email,))
+    if email.send():
+        messages.success(request, "Activation email was sent to you. You have to go to your email and confirm the activation")
+        return True
+    else:
+        messages.error(request, "Problem sending message, please check your email")
+        return False
+
+# Account activation     
+def activate(request, uidb64, token):
+    user = get_user_model()
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(username = uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Your account was succesfully activated, you can log in now")
+    else:
+        messages.error(request, "Activation link is invalid")
+    return HttpResponseRedirect(reverse("users:index"))
+
+# Password renewal email creation and sending  
+def renew_password_mail(request, user):
+    # Creates email message
+    mail_subject = "NoteApp - renew password"
+    message = render_to_string("users/renew_password_mail.html", {
+        "user": user.username,
+        "domain": get_current_site(request).domain,
+        "uid": urlsafe_base64_encode(force_bytes(user.username)),
+        "token": PasswordResetTokenGenerator().make_token(user),
+        "protocol": "https" if request.is_secure() else "http"
+    })
+    # Sends email
+    email = EmailMessage(mail_subject, message, to=(user.email,))
+    if email.send():
+        messages.success(request, "Password renewal email was sent to you, please check your email")
+        return True
+    else:
+        messages.error(request, "Something went wrong")
+        return False

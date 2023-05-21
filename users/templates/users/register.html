@@ -20,16 +20,28 @@
                 <form action="{% url 'users:register' %}" method="post">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <input class="form-control" type="email" name="email" placeholder="Email address" required="required">
+                        <input class="form-control" type="email" name="email" placeholder="Email address" autofocus required="required">
+                        <div id="passwordlHelp" class="form-text">
+                            - email address must be unique for each user
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <input class="form-control" type="text" name="username" placeholder="Username" autofocus required="required">
+                        <input class="form-control" type="text" name="username" placeholder="Username" required="required">
+                        <div id="passwordlHelp" class="form-text">
+                            - username must be unique for each user<br>
+                            - username must be between 4 and 20 characters long
+                        </div>
                     </div>
                     <div class="mb-3">
                         <input class="form-control" type="password" name="password" placeholder="Password" required="required">
                     </div>
                     <div class="mb-3">
                         <input class="form-control" type="password" name="repeat" placeholder="Repeat password" required="required">
+                        <div id="passwordlHelp" class="form-text">
+                            - password must be between 8 and 20 characters long<br>
+                            - password can't be similar to most commonly used passwords<br>
+                            - password can't be only numeric
+                        </div>
                     </div>
                     <div class="mb-3">
                         <button type="submit" class="btn btn-warning">Register</button>

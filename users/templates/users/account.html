@@ -65,6 +65,9 @@
                                 {% csrf_token %}
                                 <div class="mb-3">
                                     <input type="email" name="email" class="form-control" value="{{ request.user.email }}" required="required">
+                                    <div id="passwordlHelp" class="form-text">
+                                        - email address must be unique for each user
+                                    </div>
                                 </div>
                                 <button type="submit" class="btn btn-warning">Submit new email</button>
                             </form>
@@ -85,6 +88,11 @@
                                 </div>
                                 <div class="mb-3">
                                     <input type="password" name="repeat" class="form-control" placeholder="Repeat password" required="required">
+                                    <div id="passwordlHelp" class="form-text">
+                                        - password must be between 8 and 20 characters long<br>
+                                        - password can't be similar to most commonly used passwords<br>
+                                        - password can't be only numeric
+                                    </div>
                                 </div>
                                 <button type="submit" class="btn btn-warning">Submit new password</button>
                             </form>
