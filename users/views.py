@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.mail import EmailMessage
@@ -52,6 +53,47 @@ def login_view(request):
     # Renders login page
     return render(request, "users/login.html")
 
+def renew_password(request):
+    if request.method == "POST":
+        try:
+            user = User.objects.get(email = request.POST["email"])
+            renew_password_mail(request, user)
+            return HttpResponseRedirect(reverse("users:index"))
+        except User.DoesNotExist:
+            messages.error(request, "User doesn't exist")
+    return render(request, "users/renew_password.html")
+
+def renew_password_mail(request, user):
+    mail_subject = "NoteApp - renew password"
+    message = render_to_string("users/renew_password_mail.html", {
+        "user": user.username,
+        "domain": get_current_site(request).domain,
+        "uid": urlsafe_base64_encode(force_bytes(user.username)),
+        "token": PasswordResetTokenGenerator().make_token(user),
+        "protocol": "https" if request.is_secure() else "http"
+    })
+    email = EmailMessage(mail_subject, message, to=(user.email,))
+    if email.send():
+        messages.success(request, "Password renewal email was sent to you, please check your email")
+        return True
+    else:
+        messages.error(request, "Something went wrong")
+        return False
+    
+def newpassword(request, uidb64, token):
+    if request.method == "POST":
+        username = urlsafe_base64_decode(uidb64).decode()
+        print(username)
+        user = User.objects.get(username = username)
+        user.set_password(request.POST["password1"])
+        user.save()
+        messages.success(request, "Your password was successfully changed")
+        return HttpResponseRedirect(reverse("users:index"))
+    return render(request, "users/newpassword.html", {
+        "uidb64": uidb64,
+        "token": token
+    })
+
 # Register page
 def register(request):
     # If form is submitted checks forms information
@@ -86,7 +128,7 @@ def register(request):
     return render(request, "users/register.html")
 
 def activate_email(request, user):
-    mail_subject = "NoteApp account activation"
+    mail_subject = "NoteApp - account activation"
     message = render_to_string("users/activate_account.html", {
         "user": user.username,
         "domain": get_current_site(request).domain,
@@ -101,7 +143,7 @@ def activate_email(request, user):
     else:
         messages.error(request, "Problem sending message, please check your email")
         return False
-    
+        
 def activate(request, uidb64, token):
     user = get_user_model()
     try:

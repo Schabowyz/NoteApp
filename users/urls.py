@@ -12,5 +12,7 @@ urlpatterns = [
     path("password", views.password, name="password"),
     path("delete", views.delete, name="delete"),
     path("account", views.account, name="account"),
-    path("activate/<uidb64>/<token>", views.activate, name="activate")
+    path("activate/<uidb64>/<token>", views.activate, name="activate"),
+    path("renew_password", views.renew_password, name="renew_password"),
+    path("newpassword/<uidb64>/<token>", views.newpassword, name="newpassword")
     ]
