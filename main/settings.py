@@ -25,9 +25,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "noteappdamian.fly.dev"]
+
+CSRF_TRUSTED_ORIGINS = ["http://noteappdamian.fly.dev", "https://noteappdamian.fly.dev"]
 
 
 # Application definition
@@ -51,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -83,6 +86,17 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "noteappdamian-db",
+#         "USER": "postgres",
+#         "PASSWORD": "bifNYsfPqa0Zxx8",
+#         "HOST": "fdaa:2:3f3d:0:1::2",
+#         "PORT": "5433"
+#     }
+# }
 
 
 # Password validation
