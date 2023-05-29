@@ -28,9 +28,9 @@ SECRET_KEY = secret_key
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "noteappdamian.fly.dev"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "noteappedeploy.fly.dev"]
 
-CSRF_TRUSTED_ORIGINS = ["http://noteappdamian.fly.dev", "https://noteappdamian.fly.dev"]
+CSRF_TRUSTED_ORIGINS = ["http://noteappedeploy.fly.dev", "https://noteappedeploy.fly.dev"]
 
 
 # Application definition
