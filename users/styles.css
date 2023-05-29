@@ -1,0 +1,25 @@
+.icon-black {
+    color: #30334B;
+}
+
+.btn-custom {
+    background-color: #FFE085;
+    color: #30334B;
+    border-color: #d6b961;
+}
+
+#account {
+    background-color: #FFE085;
+}
+
+.card {
+    background-color: #FFE085;
+}
+
+hr {
+    margin: 1rem 0;
+    color: #30334B;
+    background-color: #30334B;
+    border: 0;
+    opacity: 0.25;
+}

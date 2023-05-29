@@ -20,7 +20,7 @@ def index(request):
         return HttpResponseRedirect(reverse("users:index"))
     # Gets notes of currently logged user
     return render(request, "notes/index.html", {
-        "notes": Note.objects.filter(user_id=request.user.id)
+        "notes": Note.objects.filter(user_id=request.user.id).order_by('-id')
     })
 
 # Information page about the project
