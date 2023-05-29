@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 
-from .keys import google_app_pw, google_app_name, secret_key
+from .keys import google_app_pw, google_app_name, secret_key, db
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -92,10 +92,10 @@ WSGI_APPLICATION = 'main.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "asvtaukb",
-        "USER": "asvtaukb",
-        "PASSWORD": "1fjXFVonwXPUz3Nu8L3PQLL0CPqv5tbu",
-        "HOST": "lucky.db.elephantsql.com",
+        "NAME": db["user"],
+        "USER": db["user"],
+        "PASSWORD": db["pw"],
+        "HOST": db["host"],
         "PORT": "5432"
     }
 }
